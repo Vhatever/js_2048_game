@@ -19,25 +19,26 @@ class Game {
     this.isGameActive = false;
   }
 
+  moveInDirection(direction) {
+    if (this.isGameActive) {
+      this.move(direction);
+    }
+  }
+
   moveLeft() {
-    if (this.isGameActive) {
-      this.move('left');
-    }
+    this.moveInDirection('left');
   }
+
   moveRight() {
-    if (this.isGameActive) {
-      this.move('right');
-    }
+    this.moveInDirection('right');
   }
+
   moveUp() {
-    if (this.isGameActive) {
-      this.move('up');
-    }
+    this.moveInDirection('up');
   }
+
   moveDown() {
-    if (this.isGameActive) {
-      this.move('down');
-    }
+    this.moveInDirection('down');
   }
 
   /**
@@ -136,14 +137,14 @@ class Game {
     };
 
     const moveTable = (table) => {
-      const newTable = table.map((row) => {
+      return table.map((row) => {
         let newRow = row.filter((num) => num !== 0);
         const zeroToAdd = numCols - newRow.length;
 
         newRow = [...Array(zeroToAdd).fill(0), ...newRow];
 
-        for (let i = newRow.length; i >= 0; i--) {
-          if (newRow[i - 1] === newRow[i]) {
+        for (let i = newRow.length - 1; i > 0; i--) {
+          if (newRow[i] === newRow[i - 1]) {
             newRow[i - 1] *= 2;
             newRow[i] = 0;
             addScore += newRow[i - 1];
@@ -155,41 +156,8 @@ class Game {
 
         const zerosToAddEnd = numCols - newRow.length;
 
-        newRow = [...Array(zerosToAddEnd).fill(0), ...newRow];
-
-        return newRow;
+        return [...Array(zerosToAddEnd).fill(0), ...newRow];
       });
-
-      return newTable;
-    };
-
-    const isGameOver = () => {
-      const Gamefield = 4;
-
-      for (let i = 0; i < Gamefield; i++) {
-        for (let j = 0; j < Gamefield; j++) {
-          if (this.board[i][j] === 0) {
-            return false;
-          }
-        }
-      }
-
-      for (let i = 0; i < Gamefield; i++) {
-        for (let j = 0; j < Gamefield; j++) {
-          if (j < Gamefield - 1 && this.board[i][j] === this.board[i][j + 1]) {
-            return false;
-          }
-
-          if (i < Gamefield - 1 && this.board[i][j] === this.board[i + 1][j]) {
-            return false;
-          }
-        }
-      }
-
-      this.isGameActive = false;
-      this.isGameLose = true;
-
-      return true;
     };
 
     const makeMove = (moveToSide) => {
@@ -210,42 +178,72 @@ class Game {
       }
 
       this.placeNewCell();
-
-      this.isAbleMove = !isGameOver();
+      this.isAbleMove = !this.isGameOver();
     };
 
     switch (direction) {
       case 'up':
-        const moveUp = transpose(
+        const upMove = transpose(
           reverseRow(moveTable(reverseRow(transpose(currentTable)))),
         );
 
-        makeMove(moveUp);
+        makeMove(upMove);
 
         this.boardScore += addScore;
         break;
       case 'down':
-        const moveDown = transpose(moveTable(transpose(currentTable)));
+        const downMove = transpose(moveTable(transpose(currentTable)));
 
-        makeMove(moveDown);
+        makeMove(downMove);
 
         this.boardScore += addScore;
         break;
       case 'right':
-        const moveRight = moveTable(currentTable);
+        const RightMove = moveTable(currentTable);
 
-        makeMove(moveRight);
+        makeMove(RightMove);
 
         this.boardScore += addScore;
         break;
       case 'left':
-        const moveLeft = reverseRow(moveTable(reverseRow(currentTable)));
+        const leftMove = reverseRow(moveTable(reverseRow(currentTable)));
 
-        makeMove(moveLeft);
+        makeMove(leftMove);
 
         this.boardScore += addScore;
         break;
     }
+
+    this.boardScore += addScore;
+  }
+
+  isGameOver() {
+    const size = this.board.length;
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (this.board[i][j] === 0) {
+          return false;
+        }
+      }
+    }
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (j < size - 1 && this.board[i][j] === this.board[i][j + 1]) {
+          return false;
+        }
+
+        if (i < size - 1 && this.board[i][j] === this.board[i + 1][j]) {
+          return false;
+        }
+      }
+    }
+
+    this.isGameActive = false;
+    this.isGameLose = true;
+
+    return true;
   }
 }
 
